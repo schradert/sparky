@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://devenv.sh/devenv.schema.json
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+  devenv-ai-agents:
+    url: github:cachix/devenv-ai-agents
+    flake: false
+imports:
+  - devenv-ai-agents
+allowUnfree: true
