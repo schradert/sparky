@@ -1,8 +1,10 @@
-/.aider*
 /.android/
 /.claude/
 /.devenv*
 /.direnv/
+/.gradle/
+/.idea/
 /.pre-commit-config.yaml
 /node_modules/
-devenv.local.nix
+build/
+local.properties
