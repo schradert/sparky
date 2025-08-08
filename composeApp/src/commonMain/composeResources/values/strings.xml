@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="label_sku">SKU</string>
+    <string name="label_manufacturer_color">Manufacturer Color</string>
+    <string name="label_brand">Brand</string>
+    <string name="label_size">Size</string>
+    <string name="label_texture">Texture</string>
+    <string name="label_bag_quantity">Quantity In Bag</string>
+    <string name="label_shape">Shape</string>
+    <string name="label_distributor">Distributor</string>
+    <string name="label_occasion">Occasion</string>
+    <string name="label_quantity">Count</string>
+
+    <string name="back">Back</string>
+
+    <string name="no_data_available">No data available</string>
+</resources>
