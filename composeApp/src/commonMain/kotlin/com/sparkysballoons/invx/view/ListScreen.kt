@@ -33,7 +33,7 @@ class ListViewModel(repository: InventoryRepository) : ViewModel() {
 
 @Composable
 fun ListScreen(
-    navigateToDetails: (productId: Int) -> Unit
+    navigateToDetails: (productId: String) -> Unit
 ) {
     val viewModel = koinViewModel<ListViewModel>()
     val products by viewModel.products.collectAsStateWithLifecycle()
@@ -53,7 +53,7 @@ fun ListScreen(
 @Composable
 private fun ProductGrid(
     products: List<Product>,
-    onProductClick: (Int) -> Unit,
+    onProductClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(

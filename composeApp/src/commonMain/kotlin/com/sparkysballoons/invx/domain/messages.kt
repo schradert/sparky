@@ -2,6 +2,7 @@ package com.sparkysballoons.invx.domain
 
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.mapError
+import com.github.michaelbull.result.runCatching
 
 sealed interface DomainMessage
 data class ApiError(val m: String): DomainMessage

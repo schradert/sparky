@@ -82,6 +82,7 @@ kotlin {
             implementation(libs.ktor.client.contentNegotiation)
             implementation(libs.ktor.serialization)
             implementation(libs.result)
+            implementation(libs.result.coroutines)
             implementation(projects.shared)
         }
         commonTest.dependencies {

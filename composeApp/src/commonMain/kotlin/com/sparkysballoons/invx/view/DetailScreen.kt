@@ -51,12 +51,12 @@ import sparkysballoonsinventory.composeapp.generated.resources.label_occasion
 import sparkysballoonsinventory.composeapp.generated.resources.label_quantity
 
 class DetailViewModel(private val repository: InventoryRepository) : ViewModel() {
-    fun getProduct(id: Int): Flow<Product?> = repository.getProductById(id)
+    fun getProduct(id: String): Flow<Product?> = repository.getProductById(id)
 }
 
 @Composable
 fun DetailScreen(
-    productId: Int,
+    productId: String,
     navigateBack: () -> Unit,
 ) {
     val viewModel = koinViewModel<DetailViewModel>()
@@ -103,13 +103,13 @@ private fun ProductDetails(
                     LabeledInfo(stringResource(Res.string.label_sku), product.uniqueIdSku)
                     LabeledInfo(stringResource(Res.string.label_manufacturer_color), product.manufacturerColor)
                     LabeledInfo(stringResource(Res.string.label_brand), product.brand)
-                    LabeledInfo(stringResource(Res.string.label_size), product.size)
+                    LabeledInfo(stringResource(Res.string.label_size), product.size.toString())
                     LabeledInfo(stringResource(Res.string.label_texture), product.texture)
-                    LabeledInfo(stringResource(Res.string.label_bag_quantity), product.bagQuantity)
+                    LabeledInfo(stringResource(Res.string.label_bag_quantity), product.bagQuantity.toString())
                     LabeledInfo(stringResource(Res.string.label_shape), product.shape)
                     LabeledInfo(stringResource(Res.string.label_distributor), product.distributor)
                     LabeledInfo(stringResource(Res.string.label_occasion), product.occasion)
-                    LabeledInfo(stringResource(Res.string.label_quantity), product.quantity)
+                    LabeledInfo(stringResource(Res.string.label_quantity), product.quantity.toString())
                 }
             }
         }

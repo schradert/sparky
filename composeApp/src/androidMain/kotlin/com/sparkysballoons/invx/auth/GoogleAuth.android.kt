@@ -1,10 +1,7 @@
 package com.sparkysballoons.invx.auth
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.CredentialManager.Companion.create
 import androidx.credentials.CustomCredential
@@ -15,12 +12,14 @@ import com.github.michaelbull.result.runCatching
 import com.github.michaelbull.result.toResultOr
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.sparkysballoons.invx.auth.GoogleAuthApi
+import com.sparkysballoons.invx.auth.GoogleAuthRepository
+import com.sparkysballoons.invx.auth.GoogleAuthStorage
 import com.sparkysballoons.invx.domain.ApiError
 import com.sparkysballoons.invx.domain.DomainResult
 import com.sparkysballoons.invx.domain.HttpError
-import com.sparkysballoons.invx.domain.runMapCatch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -33,41 +32,45 @@ import org.koin.dsl.module
 
 actual val clientId = "420632028099-sfhj3vemp2li7qtu2f177qprksn17aa6.apps.googleusercontent.com"
 actual val authModule = module {
-    singleOf(::BasicGoogleAuthApi)
-    singleOf(::BasicGoogleAuthRepository)
-    singleOf(::LocalGoogleAuthStorage)
-    factoryOf(::AuthViewModel)
+    singleOf(::BasicGoogleAuthApi) bind GoogleAuthApi::class
+    singleOf(::BasicGoogleAuthRepository) bind GoogleAuthRepository::class
+    singleOf(::LocalGoogleAuthStorage) bind GoogleAuthStorage::class
     factory { create(androidContext()) } bind CredentialManager::class
 }
 
-actual class BasicGoogleAuthApi(
+actual class BasicGoogleAuthApi actual constructor(
     private val context: Context,
     private val credentialManager: CredentialManager,
 ) : GoogleAuthApi {
-    actual suspend fun signOut() = credentialManager.clearCredentialState(ClearCredentialStateRequest())
-    actual fun signIn(): DomainResult<GoogleAccount> = binding {
+    override suspend fun signOut() = credentialManager.clearCredentialState(ClearCredentialStateRequest())
+    override suspend fun signIn(): DomainResult<GoogleAccount> = binding {
+        val option = GetGoogleIdOption
+            .Builder()
+            .setFilterByAuthorizedAccounts(true)
+            .setAutoSelectEnabled(true)
+            .setServerClientId(clientId)
+            // TODO set nonce
+            // .setNonce("")
+            .build()
+
         credentialManager
             .runCatching {
-                let option = GetGoogleIdOption
-                    .Builder()
-                    .setFilterByAuthorizedAccounts(true)
-                    .setAutoSelectEnabled(true)
-                    .setServerClientId(clientId)
-                    // TODO set nonce
-                    // .setNonce("")
-                    .build()
-
-                it.getCredential(
-                    context = context,
-                    request = GetCredentialRequest.Builder().addCredentialOption(option).build()
-                )
+                runBlocking {
+                    getCredential(
+                        context = context,
+                        request = GetCredentialRequest.Builder().addCredentialOption(option).build()
+                    )
+                }
             }
             .mapError(::HttpError)
             .bind()
+            .credential
             .takeIf { it is CustomCredential && it.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL }
             .toResultOr { ApiError("Credential method not supported") }
             .bind()
-            .runCatching { GoogleIdTokenCredential.createFrom(it.data) }
+            .let { credential ->
+                runCatching { GoogleIdTokenCredential.createFrom((credential as CustomCredential).data) }
+            }
             .mapError(::HttpError)
             .bind()
             .let {
@@ -80,11 +83,11 @@ actual class BasicGoogleAuthApi(
     }
 }
 
-actual class LocalGoogleAuthStorage(
+actual class LocalGoogleAuthStorage actual constructor(
     private val context: Context,
 ) : GoogleAuthStorage {
     private val json = Json {}
-    private val prefs = context.getSharedPreferences("auth")
+    private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
 
     override suspend fun saveToken(token: TokenResponse) = withContext(Dispatchers.IO) {
         val jsonString = json.encodeToString(token)

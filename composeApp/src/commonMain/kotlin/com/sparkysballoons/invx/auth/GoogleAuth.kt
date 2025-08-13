@@ -1,17 +1,36 @@
 package com.sparkysballoons.invx.auth
 
 import android.content.Context
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.credentials.CredentialManager
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.github.michaelbull.result.binding
+import com.github.michaelbull.result.coroutines.coroutineBinding
+import com.github.michaelbull.result.toResultOr
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Err
+import com.sparkysballoons.invx.domain.ApiError
 import com.sparkysballoons.invx.domain.DomainResult
+import com.sparkysballoons.invx.domain.HttpError
+import com.sparkysballoons.invx.domain.runMapCatch
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.forms.submitForm
+import io.ktor.client.call.body
+import io.ktor.http.parameters
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.module.Module
 
 expect val authModule: Module
@@ -32,7 +51,7 @@ data class TokenResponse(
 )
 
 interface GoogleAuthApi {
-    fun signIn(): DomainResult<GoogleAccount>
+    suspend fun signIn(): DomainResult<GoogleAccount>
     suspend fun signOut(): Unit
     suspend fun refreshAccessToken(refreshToken: String): DomainResult<TokenResponse> = runMapCatch(::HttpError) {
         HttpClient(CIO)
@@ -45,13 +64,13 @@ interface GoogleAuthApi {
                     append("refresh_token", refreshToken)
                 }
             )
-            .body()
+            .body<TokenResponse>()
     }
 }
 
 expect class BasicGoogleAuthApi(
-    private val context: Context,
-    private val credentialManager: CredentialManager,
+    context: Context,
+    credentialManager: CredentialManager,
 ) : GoogleAuthApi
 
 interface GoogleAuthStorage {
@@ -61,7 +80,7 @@ interface GoogleAuthStorage {
 }
 
 expect class LocalGoogleAuthStorage(
-    private val context: Context,
+    context: Context,
 ) : GoogleAuthStorage
 
 interface GoogleAuthRepository {
@@ -83,21 +102,21 @@ class BasicGoogleAuthRepository(
         storage.clearToken()
     }
 
-    override suspend fun refreshToken(): DomainResult<TokenResponse> = binding {
+    override suspend fun refreshToken(): DomainResult<TokenResponse> = coroutineBinding {
         getStoredToken()
             .toResultOr { ApiError("No token found in local storage") }
             .bind()
             .refreshToken
             .toResultOr { ApiError("No refresh token") }
             .bind()
-            .let { api.refreshAccessToken(it, clientId) }
+            .let { api.refreshAccessToken(it) }
             .bind()
-            .let { storage.saveToken(it.data) }
+            .also { storage.saveToken(it) }
     }
 }
 
-class AuthViewModel(repository: GoogleAuthRepository) : ViewModel() {
-    fun signIn(): DomainResult<GoogleAccount> = viewModelScope.launch { repository.signIn() }
+class AuthViewModel(private val repository: GoogleAuthRepository) : ViewModel() {
+    fun signIn() = viewModelScope.launch { repository.signIn() }
 }
 
 interface GoogleButtonClick {
@@ -110,10 +129,9 @@ fun GoogleSignInButton(
     modifier: Modifier = Modifier,
     onGoogleSignInResult: (GoogleAccount?) -> Unit,
 ) {
-    val viewModel = koinViewModel<AuthViewModel>()
     OutlinedButton(
         modifier = modifier,
-        onClick = { viewModel.signIn() },
+        onClick = { /* TODO: implement sign in */ },
         content = { Text("Sign In with Google") },
     )
 }

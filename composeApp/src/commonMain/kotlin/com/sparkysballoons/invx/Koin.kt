@@ -4,6 +4,7 @@ import com.sparkysballoons.invx.auth.authModule
 import com.sparkysballoons.invx.data.BasicInventoryRepository
 import com.sparkysballoons.invx.data.InMemoryInventoryStorage
 import com.sparkysballoons.invx.data.SheetsInventoryApi
+import com.sparkysballoons.invx.auth.AuthViewModel
 import com.sparkysballoons.invx.view.DetailViewModel
 import com.sparkysballoons.invx.view.ListViewModel
 import org.koin.core.context.startKoin
@@ -18,6 +19,7 @@ val dataModule = module {
 }
 
 val viewModelModule = module {
+    factory { AuthViewModel(get()) }
     factoryOf(::ListViewModel)
     factoryOf(::DetailViewModel)
 }
