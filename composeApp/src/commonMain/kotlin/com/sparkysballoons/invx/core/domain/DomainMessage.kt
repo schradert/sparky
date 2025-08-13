@@ -1,4 +1,4 @@
-package com.sparkysballoons.invx.domain
+package com.sparkysballoons.invx.core.domain
 
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.mapError

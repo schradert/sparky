@@ -11,7 +11,6 @@ import com.sparkysballoons.invx.domain.Product
 import com.sparkysballoons.invx.domain.runMapCatch
 import com.github.michaelbull.result.toResultOr
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
@@ -35,7 +34,7 @@ data class SheetsResponse(
 class SheetsInventoryApi(private val googleOauthRepository: GoogleAuthRepository) : InventoryApi {
     private val sheetId = "11HdaY0ZoqDAPA7-fYAKl0GSp54mUMOAuTYVV4B91pwI"
     private val url = "https://sheets.googleapis.com/v4/spreadsheets/$sheetId/values/products"
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true

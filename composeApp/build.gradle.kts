@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import kotlin.jvm.java
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,6 +12,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -57,6 +61,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -67,22 +72,30 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.credentials.core)
             implementation(libs.androidx.credentials.play)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.googleid)
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.navigation.compose)
+
+            api(libs.koin.annotations)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose.core)
             implementation(libs.koin.compose.viewmodel.core)
             implementation(libs.koin.compose.viewmodel.navigation)
+
             implementation(libs.ktor.client.auth)
             implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.contentNegotiation)
             implementation(libs.ktor.serialization)
+
             implementation(libs.result)
             implementation(libs.result.coroutines)
+
+            implementation(libs.googleid)
+            implementation(libs.kotlinx.serialization.json)
+
             implementation(projects.shared)
         }
         commonTest.dependencies {
@@ -90,10 +103,33 @@ kotlin {
             implementation(libs.koin.test)
             implementation(libs.koin.testJunit)
         }
+        nativeMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.ktor.client.okhttp)
         }
+    }
+
+    sourceSets.named("commonMain").configure {
+        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+    }
+}
+
+ksp {
+    arg("KOIN_USE_COMPOSE_VIEWMODEL", "true")
+    arg("KOIN_CONFIG_CHECK", "true")
+}
+
+dependencies {
+    add("kspCommonMainMetadata", libs.koin.ksp.compiler)
+}
+
+project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
+    if(name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
     }
 }
 

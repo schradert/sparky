@@ -1,4 +1,4 @@
-package com.sparkysballoons.invx.view
+package com.sparkysballoons.invx.core.view
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text

@@ -1,4 +1,4 @@
-package com.sparkysballoons.invx.view
+package com.sparkysballoons.invx.inventory.view
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sparkysballoons.invx.domain.InventoryRepository
-import com.sparkysballoons.invx.domain.Product
-import com.sparkysballoons.invx.view.EmptyContent
+import com.sparkysballoons.invx.core.view.EmptyContent
+import com.sparkysballoons.invx.inventory.domain.InventoryRepository
+import com.sparkysballoons.invx.inventory.domain.Product
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import org.koin.compose.viewmodel.koinViewModel

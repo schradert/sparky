@@ -3,43 +3,43 @@ package com.sparkysballoons.invx.domain
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ProductType(
+private data class ProductType(
     val id: Int,
     val name: String
 )
 
 @Serializable
-data class ManufacturerColor(
+private data class ManufacturerColor(
     val id: Int,
     val name: String
 )
 
 @Serializable
-data class Brand(
+private data class Brand(
     val id: Int,
     val name: String
 )
 
 @Serializable
-data class Texture(
+private data class Texture(
     val id: Int,
     val name: String
 )
 
 @Serializable
-data class Shape(
+private data class Shape(
     val id: Int,
     val name: String
 )
 
 @Serializable
-data class Distributor(
+private data class Distributor(
     val id: Int,
     val name: String
 )
 
 @Serializable
-data class Occasion(
+private data class Occasion(
     val id: Int,
     val name: String
 )

@@ -12,9 +12,9 @@ import com.github.michaelbull.result.runCatching
 import com.github.michaelbull.result.toResultOr
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.sparkysballoons.invx.auth.GoogleAuthApi
-import com.sparkysballoons.invx.auth.GoogleAuthRepository
-import com.sparkysballoons.invx.auth.GoogleAuthStorage
+import com.sparkysballoons.invx.auth.data.BasicAuthApi
+import com.sparkysballoons.invx.auth.data.BasicAuthRepository
+import com.sparkysballoons.invx.auth.data.InMemoryAuthStorage
 import com.sparkysballoons.invx.domain.ApiError
 import com.sparkysballoons.invx.domain.DomainResult
 import com.sparkysballoons.invx.domain.HttpError
