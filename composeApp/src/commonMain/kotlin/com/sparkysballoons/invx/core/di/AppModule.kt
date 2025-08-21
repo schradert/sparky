@@ -12,13 +12,13 @@ import org.koin.core.annotation.Single
 class AppModule {
 
     @Single
-    @AuthHttpClient
+    @MyAuthHttpClient
     fun authHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
         // ...
     }
 
     @Single
-    @NoAuthHttpClient
+    @MyNoAuthHttpClient
     fun noAuthHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
         // ...
     }
@@ -28,7 +28,7 @@ class AppModule {
 }
 
 @Named
-annotation class AuthHttpClient
+annotation class MyAuthHttpClient
 
 @Named
-annotation class NoAuthHttpClient
+annotation class MyNoAuthHttpClient

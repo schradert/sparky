@@ -6,7 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.plcoding.koinannotationsguide.todo.presentation.TodoScreen
+import com.sparkysballoons.invx.auth.view.AuthScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable

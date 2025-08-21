@@ -1,4 +1,4 @@
-package com.sparkysballoons.invx.domain
+package com.sparkysballoons.invx.inventory.domain
 
 import kotlinx.serialization.Serializable
 

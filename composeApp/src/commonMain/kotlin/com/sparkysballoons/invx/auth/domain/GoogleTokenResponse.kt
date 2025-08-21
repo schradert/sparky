@@ -1,7 +1,7 @@
 package com.sparkysballoons.invx.auth.domain
 
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serialization
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class TokenResponse(

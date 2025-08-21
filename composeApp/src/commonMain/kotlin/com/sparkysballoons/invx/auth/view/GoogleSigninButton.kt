@@ -7,6 +7,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.andThen
+import com.sparkysballoons.invx.auth.domain.GoogleAccount
 import org.koin.compose.viewmodel.koinViewModel
 import kotlinx.coroutines.launch
 
@@ -22,10 +23,7 @@ fun GoogleSignInButton(
         modifier = modifier,
         onClick = { 
             coroutineScope.launch {
-                viewModel.signIn().andThen { account -> 
-                    onGoogleSignInResult(account)
-                    Ok(account)
-                }
+                viewModel.signIn()
             }
         },
         content = { Text("Sign In with Google") },

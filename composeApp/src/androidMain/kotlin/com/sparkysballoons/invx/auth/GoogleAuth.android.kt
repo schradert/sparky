@@ -14,10 +14,15 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.sparkysballoons.invx.auth.data.BasicAuthApi
 import com.sparkysballoons.invx.auth.data.BasicAuthRepository
-import com.sparkysballoons.invx.auth.data.InMemoryAuthStorage
-import com.sparkysballoons.invx.domain.ApiError
-import com.sparkysballoons.invx.domain.DomainResult
-import com.sparkysballoons.invx.domain.HttpError
+import com.sparkysballoons.invx.auth.data.LocalAuthStorage
+import com.sparkysballoons.invx.auth.domain.AuthApi
+import com.sparkysballoons.invx.auth.domain.AuthRepository
+import com.sparkysballoons.invx.auth.domain.AuthStorage
+import com.sparkysballoons.invx.auth.domain.GoogleAccount
+import com.sparkysballoons.invx.auth.domain.TokenResponse
+import com.sparkysballoons.invx.core.domain.ApiError
+import com.sparkysballoons.invx.core.domain.DomainResult
+import com.sparkysballoons.invx.core.domain.HttpError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -29,85 +34,15 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.core.annotation.Single
 
-actual val clientId = "420632028099-sfhj3vemp2li7qtu2f177qprksn17aa6.apps.googleusercontent.com"
-actual val authModule = module {
-    singleOf(::BasicGoogleAuthApi) bind GoogleAuthApi::class
-    singleOf(::BasicGoogleAuthRepository) bind GoogleAuthRepository::class
-    singleOf(::LocalGoogleAuthStorage) bind GoogleAuthStorage::class
-    factory { create(androidContext()) } bind CredentialManager::class
+val androidClientId = "420632028099-sfhj3vemp2li7qtu2f177qprksn17aa6.apps.googleusercontent.com"
+
+val androidAuthModule = module {
+    singleOf(::BasicAuthApi) bind AuthApi::class
+    singleOf(::LocalAuthStorage) bind AuthStorage::class
+    singleOf(::BasicAuthRepository) bind AuthRepository::class
+    factory { CredentialManager.create(androidContext()) } bind CredentialManager::class
+    factory { androidContext() } bind Context::class
 }
 
-actual class BasicGoogleAuthApi actual constructor(
-    private val context: Context,
-    private val credentialManager: CredentialManager,
-) : GoogleAuthApi {
-    override suspend fun signOut() = credentialManager.clearCredentialState(ClearCredentialStateRequest())
-    override suspend fun signIn(): DomainResult<GoogleAccount> = binding {
-        val option = GetGoogleIdOption
-            .Builder()
-            .setFilterByAuthorizedAccounts(true)
-            .setAutoSelectEnabled(true)
-            .setServerClientId(clientId)
-            // TODO set nonce
-            // .setNonce("")
-            .build()
-
-        credentialManager
-            .runCatching {
-                runBlocking {
-                    getCredential(
-                        context = context,
-                        request = GetCredentialRequest.Builder().addCredentialOption(option).build()
-                    )
-                }
-            }
-            .mapError(::HttpError)
-            .bind()
-            .credential
-            .takeIf { it is CustomCredential && it.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL }
-            .toResultOr { ApiError("Credential method not supported") }
-            .bind()
-            .let { credential ->
-                runCatching { GoogleIdTokenCredential.createFrom((credential as CustomCredential).data) }
-            }
-            .mapError(::HttpError)
-            .bind()
-            .let {
-                GoogleAccount(
-                    token = it.idToken,
-                    displayName = it.displayName ?: "",
-                    profileImageUrl = it.profilePictureUri?.toString(),
-                )
-            }
-    }
-}
-
-actual class LocalGoogleAuthStorage actual constructor(
-    private val context: Context,
-) : GoogleAuthStorage {
-    private val json = Json {}
-    private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
-
-    override suspend fun saveToken(token: TokenResponse) = withContext(Dispatchers.IO) {
-        val jsonString = json.encodeToString(token)
-        prefs.edit().putString(KEY_TOKEN, json.encodeToString(token)).apply()
-    }
-
-    override suspend fun getToken(): TokenResponse? = withContext(Dispatchers.IO) {
-        val jsonString = prefs.getString(KEY_TOKEN, null) ?: return@withContext null
-        return@withContext try {
-            json.decodeFromString<TokenResponse>(jsonString)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    override suspend fun clearToken() = withContext(Dispatchers.IO) {
-        prefs.edit().remove(KEY_TOKEN).apply()
-    }
-
-    companion object {
-        private const val KEY_TOKEN = "token_response"
-    }
-}

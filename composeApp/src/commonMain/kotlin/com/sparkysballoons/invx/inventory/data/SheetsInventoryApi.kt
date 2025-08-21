@@ -1,14 +1,13 @@
-package com.sparkysballoons.invx.data
+package com.sparkysballoons.invx.inventory.data
 
-import com.github.michaelbull.result.binding
 import com.github.michaelbull.result.coroutines.coroutineBinding
-import com.sparkysballoons.invx.auth.GoogleAuthRepository
-import com.sparkysballoons.invx.domain.ApiError
-import com.sparkysballoons.invx.domain.DomainResult
-import com.sparkysballoons.invx.domain.HttpError
-import com.sparkysballoons.invx.domain.InventoryApi
-import com.sparkysballoons.invx.domain.Product
-import com.sparkysballoons.invx.domain.runMapCatch
+import com.sparkysballoons.invx.auth.domain.AuthRepository
+import com.sparkysballoons.invx.core.domain.ApiError
+import com.sparkysballoons.invx.core.domain.DomainResult
+import com.sparkysballoons.invx.core.domain.HttpError
+import com.sparkysballoons.invx.inventory.domain.InventoryApi
+import com.sparkysballoons.invx.inventory.domain.Product
+import com.sparkysballoons.invx.core.domain.runMapCatch
 import com.github.michaelbull.result.toResultOr
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -31,7 +30,7 @@ data class SheetsResponse(
     val values: List<List<String>>
 )
 
-class SheetsInventoryApi(private val googleOauthRepository: GoogleAuthRepository) : InventoryApi {
+class SheetsInventoryApi(private val authRepository: AuthRepository) : InventoryApi {
     private val sheetId = "11HdaY0ZoqDAPA7-fYAKl0GSp54mUMOAuTYVV4B91pwI"
     private val url = "https://sheets.googleapis.com/v4/spreadsheets/$sheetId/values/products"
     private val client = HttpClient {
@@ -54,7 +53,7 @@ class SheetsInventoryApi(private val googleOauthRepository: GoogleAuthRepository
             bearer {
                 loadTokens {
                     // TODO handle mangled token error
-                    with (googleOauthRepository.getStoredToken()!!) {
+                    with (authRepository.getStoredToken()!!) {
                         BearerTokens(accessToken, refreshToken)
                     }
                 }

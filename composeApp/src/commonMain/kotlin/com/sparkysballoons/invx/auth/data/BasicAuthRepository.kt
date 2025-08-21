@@ -7,6 +7,7 @@ import com.sparkysballoons.invx.auth.domain.AuthStorage
 import com.sparkysballoons.invx.auth.domain.AuthRepository
 import com.sparkysballoons.invx.auth.domain.GoogleAccount
 import com.sparkysballoons.invx.auth.domain.TokenResponse
+import com.sparkysballoons.invx.auth.domain.User
 import com.sparkysballoons.invx.core.domain.DomainResult
 import com.sparkysballoons.invx.core.domain.ApiError
 
@@ -32,5 +33,10 @@ class BasicAuthRepository(
             .let { api.refreshAccessToken(it) }
             .bind()
             .also { storage.saveToken(it) }
+    }
+
+    override suspend fun getUser(): User? {
+        // TODO: Implement user retrieval logic
+        return null
     }
 }
